@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>VAULT — Digital Templates</title>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+
+  <!-- SweetAlert2 -->
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+  <!-- PayPal SDK (sandbox) -->
+  <!-- IMPORTANTE: Reemplaza client-id con tu clave real antes de producción -->
+  <script src="https://www.paypal.com/sdk/js?client-id=sb&currency=USD" defer></script>
+
+  <!-- EmailJS SDK -->
+  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+
+  <!-- Custom Styles -->
+  <link rel="stylesheet" href="styles.css" />
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            obsidian:  '#0E0E0E',
+            ink:       '#161616',
+            graphite:  '#1F1F1F',
+            ash:       '#2A2A2A',
+            mist:      '#3D3D3D',
+            ivory:     '#F5F0E8',
+            cream:     '#EDE8DC',
+            linen:     '#D4CFC5',
+            champagne: '#C9A96E',
+            gold:      '#B8860B',
+            gilded:    '#E8C97D',
+          },
+          fontFamily: {
+            display: ['"Playfair Display"', 'serif'],
+            body:    ['"DM Sans"', 'sans-serif'],
+            mono:    ['"DM Mono"', 'monospace'],
+          },
+        }
+      }
+    }
+  </script>
+</head>
+
+<body class="bg-obsidian text-ivory font-body antialiased overflow-x-hidden">
+
+  <!-- ═══════════════════════════════════════════════ OVERLAY CART -->
+  <div id="cart-overlay" class="cart-overlay" onclick="toggleCart()"></div>
+
+  <!-- ═══════════════════════════════════════════════ SIDEBAR CART -->
+  <aside id="cart-sidebar" class="cart-sidebar" aria-label="Carrito de compras">
+    <div class="flex flex-col h-full">
+
+      <!-- Cart Header -->
+      <div class="cart-header">
+        <div>
+          <p class="text-xs tracking-[0.2em] text-champagne uppercase font-mono">Tu selección</p>
+          <h2 class="font-display text-2xl text-ivory mt-1">Carrito</h2>
+        </div>
+        <button onclick="toggleCart()" class="cart-close-btn" aria-label="Cerrar carrito">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <!-- Cart Items -->
+      <div id="cart-items" class="cart-items flex-1 overflow-y-auto">
+        <!-- Items rendered by JS -->
+        <div id="cart-empty" class="cart-empty">
+          <i data-lucide="shopping-bag" class="w-10 h-10 text-mist mx-auto mb-4"></i>
+          <p class="text-linen text-sm">Tu carrito está vacío.</p>
+          <p class="text-mist text-xs mt-1">Agrega plantillas para comenzar.</p>
+        </div>
+      </div>
+
+      <!-- Cart Footer -->
+      <div id="cart-footer" class="cart-footer hidden">
+        <div class="flex justify-between items-center mb-4">
+          <span class="text-linen text-sm tracking-wide">Total</span>
+          <span id="cart-total" class="font-display text-2xl text-champagne">$0.00</span>
+        </div>
+
+        <!-- Email input -->
+        <div class="mb-4">
+          <label class="text-xs text-linen tracking-widest uppercase block mb-1.5" for="buyer-email">
+            Email para entrega
+          </label>
+          <input
+            id="buyer-email"
+            type="email"
+            placeholder="tu@correo.com"
+            class="email-input"
+            required
+          />
+        </div>
+
+        <!-- Payment Methods -->
+        <div class="space-y-3">
+          <!-- PayPal Button Container -->
+          <div id="paypal-button-container" class="paypal-container">
+            <!-- PayPal Smart Buttons renderizados por JS -->
+          </div>
+
+          <!-- USDT Option -->
+          <button onclick="openCryptoModal()" class="btn-crypto">
+            <i data-lucide="bitcoin" class="w-4 h-4"></i>
+            Pagar con USDT (TRC20 / ERC20)
+          </button>
+        </div>
+
+        <p class="text-xs text-mist text-center mt-4 leading-relaxed">
+          Los archivos se envían automáticamente a tu email tras confirmar el pago.
+        </p>
+      </div>
+
+    </div>
+  </aside>
+
+  <!-- ═══════════════════════════════════════════════ NAVBAR -->
+  <header class="navbar" id="navbar">
+    <div class="max-w-7xl mx-auto px-6 lg:px-10 flex items-center justify-between h-full">
+
+      <!-- Logo -->
+      <a href="#" class="logo-mark">
+        <span class="font-display text-xl tracking-tight text-ivory">VAULT</span>
+        <span class="logo-dot"></span>
+      </a>
+
+      <!-- Nav Links -->
+      <nav class="hidden md:flex items-center gap-8">
+        <a href="#productos" class="nav-link">Plantillas</a>
+        <a href="#categorias" class="nav-link">Categorías</a>
+        <a href="#sobre" class="nav-link">Sobre Vault</a>
+      </nav>
+
+      <!-- Cart Trigger -->
+      <button onclick="toggleCart()" class="cart-trigger" aria-label="Abrir carrito">
+        <i data-lucide="shopping-bag" class="w-5 h-5"></i>
+        <span id="cart-badge" class="cart-badge hidden">0</span>
+      </button>
+
+    </div>
+  </header>
+
+  <!-- ═══════════════════════════════════════════════ HERO -->
+  <section class="hero-section">
+    <div class="hero-bg-grid"></div>
+    <div class="hero-accent-line"></div>
+    <div class="max-w-7xl mx-auto px-6 lg:px-10 relative z-10">
+
+      <div class="hero-content">
+        <p class="hero-eyebrow">
+          <span class="eyebrow-line"></span>
+          Plantillas Digitales de Alto Rendimiento
+        </p>
+        <h1 class="hero-title">
+          Sistemas que<br/>
+          <em>funcionan</em><br/>
+          desde el día uno.
+        </h1>
+        <p class="hero-subtitle">
+          Plantillas profesionales para negocios, finanzas personales y organización corporativa.
+          Descarga inmediata. Sin fricciones.
+        </p>
+        <div class="hero-actions">
+          <a href="#productos" class="btn-primary">
+            Explorar colección
+            <i data-lucide="arrow-down" class="w-4 h-4"></i>
+          </a>
+          <a href="#sobre" class="btn-ghost">
+            ¿Qué es Vault?
+          </a>
+        </div>
+      </div>
+
+      <!-- Hero Stats -->
+      <div class="hero-stats">
+        <div class="stat-item">
+          <span class="stat-number">48+</span>
+          <span class="stat-label">Plantillas</span>
+        </div>
+        <div class="stat-divider"></div>
+        <div class="stat-item">
+          <span class="stat-number">3</span>
+          <span class="stat-label">Categorías</span>
+        </div>
+        <div class="stat-divider"></div>
+        <div class="stat-item">
+          <span class="stat-number">$0</span>
+          <span class="stat-label">Envío</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════ CATEGORY FILTER -->
+  <section id="categorias" class="max-w-7xl mx-auto px-6 lg:px-10 pt-24 pb-12">
+    <div class="flex items-center gap-6 flex-wrap">
+      <span class="text-xs text-linen tracking-[0.2em] uppercase font-mono">Filtrar por</span>
+      <div class="filter-pills" id="filter-pills" role="group" aria-label="Filtros de categoría">
+        <button class="pill active" data-filter="all" onclick="filterProducts('all', this)">Todo</button>
+        <button class="pill" data-filter="negocios" onclick="filterProducts('negocios', this)">Negocios</button>
+        <button class="pill" data-filter="finanzas" onclick="filterProducts('finanzas', this)">Finanzas</button>
+        <button class="pill" data-filter="organizacion" onclick="filterProducts('organizacion', this)">Organización</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════ PRODUCTS GRID -->
+  <section id="productos" class="max-w-7xl mx-auto px-6 lg:px-10 pb-24">
+    <div class="section-header">
+      <h2 class="font-display text-4xl lg:text-5xl text-ivory">La Colección</h2>
+      <p class="text-linen text-sm mt-2" id="product-count"></p>
+    </div>
+    <div id="products-grid" class="products-grid">
+      <!-- Products rendered by JS -->
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════ SOBRE VAULT -->
+  <section id="sobre" class="sobre-section">
+    <div class="max-w-7xl mx-auto px-6 lg:px-10">
+      <div class="sobre-grid">
+        <div class="sobre-content">
+          <p class="text-xs tracking-[0.2em] text-champagne uppercase font-mono mb-4">Sobre Vault</p>
+          <h2 class="font-display text-4xl lg:text-5xl text-ivory leading-tight mb-6">
+            Herramientas construidas<br/><em>para profesionales serios.</em>
+          </h2>
+          <p class="text-linen leading-relaxed mb-4">
+            Vault nació de la necesidad de tener sistemas reales para gestionar negocios, 
+            finanzas y proyectos sin perder tiempo en diseñar desde cero.
+          </p>
+          <p class="text-mist leading-relaxed">
+            Cada plantilla está estructurada para ser funcional desde el primer uso,
+            adaptable a cualquier sector y lista para escalar con tu negocio.
+          </p>
+        </div>
+        <div class="sobre-features">
+          <div class="feature-item">
+            <i data-lucide="zap" class="w-5 h-5 text-champagne"></i>
+            <div>
+              <h3 class="text-ivory text-sm font-medium mb-1">Entrega instantánea</h3>
+              <p class="text-mist text-xs leading-relaxed">Tu compra llega al email en segundos, sin esperas ni procesos manuales.</p>
+            </div>
+          </div>
+          <div class="feature-item">
+            <i data-lucide="shield-check" class="w-5 h-5 text-champagne"></i>
+            <div>
+              <h3 class="text-ivory text-sm font-medium mb-1">Pago seguro</h3>
+              <p class="text-mist text-xs leading-relaxed">PayPal y USDT con validación de transacción antes de liberar los archivos.</p>
+            </div>
+          </div>
+          <div class="feature-item">
+            <i data-lucide="refresh-cw" class="w-5 h-5 text-champagne"></i>
+            <div>
+              <h3 class="text-ivory text-sm font-medium mb-1">Actualizaciones incluidas</h3>
+              <p class="text-mist text-xs leading-relaxed">Las mejoras de cada plantilla llegan gratis a tu email original de compra.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════ FOOTER -->
+  <footer class="footer">
+    <div class="max-w-7xl mx-auto px-6 lg:px-10 flex flex-col md:flex-row items-center justify-between gap-4">
+      <span class="font-display text-lg text-ivory">VAULT<span class="text-champagne">.</span></span>
+      <p class="text-mist text-xs">© 2025 Vault Digital. Todos los derechos reservados.</p>
+      <div class="flex gap-6">
+        <a href="#" class="text-mist hover:text-champagne text-xs transition-colors">Términos</a>
+        <a href="#" class="text-mist hover:text-champagne text-xs transition-colors">Privacidad</a>
+        <a href="#" class="text-mist hover:text-champagne text-xs transition-colors">Contacto</a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ═══════════════════════════════════════════════ CRYPTO MODAL -->
+  <div id="crypto-modal" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+    <div class="modal-box">
+      <div class="modal-header">
+        <div>
+          <p class="text-xs tracking-[0.2em] text-champagne uppercase font-mono">Pago Cripto</p>
+          <h3 id="modal-title" class="font-display text-2xl text-ivory mt-1">Pagar con USDT</h3>
+        </div>
+        <button onclick="closeCryptoModal()" class="cart-close-btn" aria-label="Cerrar modal">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <!-- Network Selector -->
+      <div class="mb-6">
+        <label class="modal-label">Selecciona la red</label>
+        <div class="network-tabs">
+          <button class="network-tab active" onclick="switchNetwork('TRC20', this)">TRC20 (TRON)</button>
+          <button class="network-tab" onclick="switchNetwork('ERC20', this)">ERC20 (ETH)</button>
+        </div>
+      </div>
+
+      <!-- Wallet Address -->
+      <div class="mb-6">
+        <label class="modal-label">Dirección de wallet</label>
+        <div class="wallet-box">
+          <p id="wallet-address" class="font-mono text-xs text-champagne break-all leading-relaxed">
+            <!-- Address set by JS -->
+          </p>
+          <button onclick="copyWalletAddress()" class="copy-btn" aria-label="Copiar dirección">
+            <i data-lucide="copy" class="w-4 h-4"></i>
+          </button>
+        </div>
+        <p class="text-xs text-mist mt-2">
+          ⚠️ Verifica que la red seleccionada coincida con la de tu wallet. Los fondos enviados a la red incorrecta se pierden.
+        </p>
+      </div>
+
+      <!-- Amount to send -->
+      <div class="mb-6">
+        <label class="modal-label">Monto exacto a enviar</label>
+        <div class="amount-display">
+          <span id="usdt-amount" class="font-display text-3xl text-champagne">$0.00</span>
+          <span class="text-linen text-sm ml-2">USDT</span>
+        </div>
+      </div>
+
+      <!-- Transaction ID -->
+      <div class="mb-6">
+        <label class="modal-label" for="tx-hash">Transaction ID / Hash</label>
+        <input
+          id="tx-hash"
+          type="text"
+          placeholder="Pega el hash de la transacción aquí..."
+          class="email-input font-mono text-xs"
+        />
+        <p class="text-xs text-mist mt-1">
+          Puedes encontrar el hash en el historial de tu wallet tras enviar el pago.
+        </p>
+      </div>
+
+      <!-- Email in modal (mirrored) -->
+      <div class="mb-6">
+        <label class="modal-label" for="crypto-email">Email para recibir los archivos</label>
+        <input
+          id="crypto-email"
+          type="email"
+          placeholder="tu@correo.com"
+          class="email-input"
+        />
+      </div>
+
+      <button onclick="submitCryptoPayment()" class="btn-primary w-full justify-center">
+        <i data-lucide="check-circle" class="w-4 h-4"></i>
+        Confirmar pago y recibir archivos
+      </button>
+
+      <!-- NOTA TÉCNICA: La lógica de confirmación está en app.js →  submitCryptoPayment() -->
+      <p class="text-xs text-mist text-center mt-4 leading-relaxed">
+        La entrega se activa sólo después de verificar el hash en la blockchain. 
+        El proceso puede tardar hasta 5 minutos.
+      </p>
+    </div>
+  </div>
+
+  <!-- App JS -->
+  <script src="app.js"></script>
+</body>
+</html>
